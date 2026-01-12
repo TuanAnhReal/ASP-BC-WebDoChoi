@@ -1,0 +1,99 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Custormer.Master.cs" Inherits="WebDoChoi.Site1" %>
+
+<!DOCTYPE html>
+<html>
+<head runat="server">
+    <title>MyKingdom Clone - Thế giới đồ chơi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        :root {
+            --mk-red: #ED1C24;
+        }
+
+        .bg-mykingdom {
+            background-color: var(--mk-red) !important;
+        }
+
+        .nav-link {
+            color: white !important;
+            font-weight: bold;
+        }
+
+        .search-bar {
+            border-radius: 20px;
+        }
+    </style>
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+</head>
+<body>
+    <form id="form1" runat="server">
+        <header class="bg-mykingdom border-bottom sticky-top">
+            <div class="container py-3">
+                <div class="row align-items-center">
+                    <div class="col-md-2">
+                        <a href="Default.aspx">
+                            <img src="/Images/logo.png" alt="Logo" height="50" />
+                        </a>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="input-group">
+                            <input type="text" class="form-control search-bar" placeholder="Tìm kiếm sản phẩm...">
+                            <button class="btn btn-outline-danger" type="button"><i class="fa fa-search"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-end">
+                        <% if (Session["KhachHang"] == null) { %>
+                        <a href="Login.aspx" class="text-dark me-2">Đăng nhập</a>
+                        <span class="text-muted">|</span>
+                        <a href="Register.aspx" class="text-dark ms-2">Đăng ký</a>
+                        <% } else { %>
+                        <% 
+                            // Lấy thông tin user ép kiểu về class UserSession
+                            var user = Session["KhachHang"] as WebDoChoi.Models.UserSession;
+                        %>
+                        <span class="text-primary fw-bold me-2">Xin chào, <%= user.HoTen %></span>
+
+                        <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="btn btn-sm btn-outline-secondary">
+            <i class="fa fa-sign-out-alt"></i> Thoát
+                        </asp:LinkButton>
+                        <% } %>
+
+                        <a href="Cart.aspx" class="text-danger position-relative ms-3">
+                            <i class="fa fa-shopping-cart fa-lg"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <nav class="bg-mykingdom shadow-sm">
+            <div class="container">
+                <ul class="nav">
+                    <li class="nav-item"><a class="nav-link" href="Default.aspx">TRANG CHỦ</a></li>
+                    <asp:Repeater ID="rptMenu" runat="server">
+                        <ItemTemplate>
+                            <li class="nav-item">
+                                <a class="nav-link" href='Category.aspx?id=<%# Eval("MaNhom") %>'>
+                                    <%# Eval("TenNhom").ToString().ToUpper() %>
+                                </a>
+                            </li>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="container mt-4">
+            <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
+        </main>
+
+        <footer class="bg-light py-4 mt-5 border-top">
+            <div class="container text-center">
+                <p>&copy; 2026 MyKingdom Clone Project. All rights reserved.</p>
+            </div>
+        </footer>
+    </form>
+    <asp:SqlDataSource ID="dsNhomSP" runat="server" ConnectionString="<%$ ConnectionStrings:DB_WEB_DO_CHOI_Conn %>" ProviderName="<%$ ConnectionStrings:DB_WEB_DO_CHOI_Conn.ProviderName %>" SelectCommand="SELECT * FROM [NhomSanPham]"></asp:SqlDataSource>
+</body>
+</html>
