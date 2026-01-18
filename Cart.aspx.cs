@@ -106,5 +106,13 @@ namespace WebDoChoi
             }
 
         }
+
+        protected void btnThanhToan_Click(object sender, EventArgs e)
+        {
+            if (Session["Cart"] != null)
+            {
+                Response.Redirect("Checkout.aspx");
+            }
+        }
     }
 }

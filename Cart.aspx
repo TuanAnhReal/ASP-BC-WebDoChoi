@@ -68,7 +68,7 @@
                 </div>
                 <div class="col-md-6 text-end">
                     <h4>Tổng cộng: <asp:Label ID="lblTongTien" runat="server" Text="0 đ" CssClass="text-danger fw-bold"></asp:Label></h4>
-                    <asp:Button ID="btnThanhToan" runat="server" Text="TIẾN HÀNH THANH TOÁN" CssClass="btn btn-danger btn-lg mt-2" />
+                    <asp:Button ID="btnThanhToan" runat="server" Text="TIẾN HÀNH THANH TOÁN" CssClass="btn btn-danger btn-lg mt-2" OnClick="btnThanhToan_Click" />
                 </div>
             </div>
         </asp:Panel>

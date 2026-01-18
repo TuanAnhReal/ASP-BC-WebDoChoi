@@ -1,99 +1,131 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Custormer.Master.cs" Inherits="WebDoChoi.Site1" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Customer.Master.cs" Inherits="WebDoChoi.Customer" %>
 
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head runat="server">
-    <title>MyKingdom Clone - Thế giới đồ chơi</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thế giới đồ chơi - Thỏa mãn đam mê</title>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <style>
-        :root {
-            --mk-red: #ED1C24;
-        }
-
-        .bg-mykingdom {
-            background-color: var(--mk-red) !important;
-        }
-
-        .nav-link {
-            color: white !important;
-            font-weight: bold;
-        }
-
-        .search-bar {
-            border-radius: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <%--gán css--%>
+    <link href="MyStyle/Custormer.css" rel="stylesheet" />
+    
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 </head>
+
 <body>
     <form id="form1" runat="server">
-        <header class="bg-mykingdom border-bottom sticky-top">
-            <div class="container py-3">
+        <header class="border-bottom sticky-top bg-white">
+            <div class="container top-bar">
                 <div class="row align-items-center">
-                    <div class="col-md-2">
-                        <a href="Default.aspx">
-                            <img src="/Images/logo.png" alt="Logo" height="50" />
+                    
+                    <div class="col-md-3">
+                        <a href="Default.aspx" class="text-decoration-none">
+                            <h2 class="m-0 fw-bold" style="color: var(--mk-red);">THEGIOIDOCHOI</h2>
                         </a>
                     </div>
-                    <div class="col-md-7">
-                        <div class="input-group">
-                            <input type="text" class="form-control search-bar" placeholder="Tìm kiếm sản phẩm...">
-                            <button class="btn btn-outline-danger" type="button"><i class="fa fa-search"></i></button>
+
+                    <div class="col-md-5">
+                        <div class="input-group search-container">
+                            <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control" placeholder="Tìm kiếm sản phẩm..."></asp:TextBox>
+                            <asp:LinkButton ID="btnSearch" runat="server" CssClass="btn" OnClick="btnSearch_Click">
+                                <i class="fa fa-search"></i>
+                            </asp:LinkButton>
                         </div>
                     </div>
-                    <div class="col-md-3 text-end">
-                        <% if (Session["KhachHang"] == null) { %>
-                        <a href="Login.aspx" class="text-dark me-2">Đăng nhập</a>
-                        <span class="text-muted">|</span>
-                        <a href="Register.aspx" class="text-dark ms-2">Đăng ký</a>
-                        <% } else { %>
-                        <% 
-                            // Lấy thông tin user ép kiểu về class UserSession
-                            var user = Session["KhachHang"] as WebDoChoi.Models.UserSession;
-                        %>
-                        <span class="text-primary fw-bold me-2">Xin chào, <%= user.HoTen %></span>
 
-                        <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="btn btn-sm btn-outline-secondary">
-            <i class="fa fa-sign-out-alt"></i> Thoát
-                        </asp:LinkButton>
-                        <% } %>
+                    <div class="col-md-4 d-flex justify-content-end align-items-center">
+                        <div class="me-4">
+                            <asp:PlaceHolder ID="phGuest" runat="server">
+                                <a href="Login.aspx" class="text-dark fw-bold text-decoration-none"><i class="fa fa-user me-1"></i> Đăng nhập</a>
+                                <span class="mx-2">|</span>
+                                <a href="Register.aspx" class="text-dark text-decoration-none">Đăng ký</a>
+                            </asp:PlaceHolder>
 
-                        <a href="Cart.aspx" class="text-danger position-relative ms-3">
-                            <i class="fa fa-shopping-cart fa-lg"></i>
+                            <asp:PlaceHolder ID="phUser" runat="server" Visible="false">
+                                <div class="dropdown">
+                                    <a class="dropdown-toggle text-dark fw-bold text-decoration-none" href="#" role="button" data-bs-toggle="dropdown">
+                                        <i class="fa fa-user-circle text-danger me-1"></i> Xin chào, <asp:Label ID="lblTenKhach" runat="server"></asp:Label>
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <% if (Session["KhachHang"] != null && ((WebDoChoi.Models.UserSession)Session["KhachHang"]).VaiTro == "Admin") { %>
+                                            <li><a class="dropdown-item fw-bold text-primary" href="Admin/Dashboard.aspx"><i class="fa fa-cogs me-2"></i>Trang Quản Trị</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                        <% } %>
+
+                                        <li><a class="dropdown-item" href="Profile.aspx"><i class="fa fa-user me-2"></i>Thông tin tài khoản</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+
+                                        <li><a class="dropdown-item" href="MyOrders.aspx"><i class="fa fa-history me-2"></i>Lịch sử đơn hàng</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <asp:LinkButton ID="btnLogout" runat="server" CssClass="dropdown-item text-danger" OnClick="btnLogout_Click">
+                                                <i class="fa fa-sign-out-alt me-2"></i>Đăng xuất
+                                            </asp:LinkButton>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </asp:PlaceHolder>
+                        </div>
+
+                        <a href="Cart.aspx" class="position-relative text-dark">
+                            <i class="fa fa-shopping-cart fa-2x" style="color: var(--mk-red);"></i>
+                            <span class="position-absolute translate-middle badge rounded-pill bg-dark cart-badge">
+                                <asp:Label ID="lblCartCount" runat="server" Text="0"></asp:Label>
+                            </span>
                         </a>
                     </div>
                 </div>
             </div>
+
+            <nav class="navbar navbar-expand-lg navbar-dark main-navbar p-0">
+                <div class="container">
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav me-auto">
+                            <li class="nav-item">
+                                <a class="nav-link" href="Default.aspx">TRANG CHỦ</a>
+                            </li>
+                            
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">THƯƠNG HIỆU</a>
+                                <ul class="dropdown-menu shadow">
+                                    <asp:Repeater ID="rptMenuThuongHieu" runat="server">
+                                        <ItemTemplate>
+                                            <li>
+                                                <a class="dropdown-item" href='Default.aspx?brand=<%# Eval("MaThuongHieu") %>'>
+                                                    <%# Eval("TenThuongHieu") %>
+                                                </a>
+                                            </li>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </ul>
+                            </li>
+                            
+                            <li class="nav-item"><a class="nav-link" href="#">KHUYẾN MÃI</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#">GIỚI THIỆU</a></li>
+                            <li class="nav-item"><a class="nav-link" href="#">LIÊN HỆ</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
         </header>
 
-        <nav class="bg-mykingdom shadow-sm">
-            <div class="container">
-                <ul class="nav">
-                    <li class="nav-item"><a class="nav-link" href="Default.aspx">TRANG CHỦ</a></li>
-                    <asp:Repeater ID="rptMenu" runat="server">
-                        <ItemTemplate>
-                            <li class="nav-item">
-                                <a class="nav-link" href='Category.aspx?id=<%# Eval("MaNhom") %>'>
-                                    <%# Eval("TenNhom").ToString().ToUpper() %>
-                                </a>
-                            </li>
-                        </ItemTemplate>
-                    </asp:Repeater>
-                </ul>
-            </div>
-        </nav>
-
-        <main class="container mt-4">
+        <main class="py-4 bg-light" style="min-height: 80vh;">
             <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
         </main>
 
-        <footer class="bg-light py-4 mt-5 border-top">
+        <footer class="bg-dark text-white py-4 mt-auto">
             <div class="container text-center">
-                <p>&copy; 2026 MyKingdom Clone Project. All rights reserved.</p>
+                <p>&copy; 2026 Thế Giới Đồ Chơi. All rights reserved.</p>
             </div>
         </footer>
     </form>
-    <asp:SqlDataSource ID="dsNhomSP" runat="server" ConnectionString="<%$ ConnectionStrings:DB_WEB_DO_CHOI_Conn %>" ProviderName="<%$ ConnectionStrings:DB_WEB_DO_CHOI_Conn.ProviderName %>" SelectCommand="SELECT * FROM [NhomSanPham]"></asp:SqlDataSource>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

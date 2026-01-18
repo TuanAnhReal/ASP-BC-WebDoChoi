@@ -11,5 +11,6 @@ namespace WebDoChoi.Models
         public int MaKhachHang { get; set; }
         public string HoTen { get; set; }
         public string Email { get; set; }
+        public string VaiTro { get; set; }
     }
 }

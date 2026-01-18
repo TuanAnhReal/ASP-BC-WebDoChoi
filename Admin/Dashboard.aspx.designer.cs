@@ -7,65 +7,56 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WebDoChoi
+namespace WebDoChoi.Admin
 {
 
 
-    public partial class Default
+    public partial class Dashboard
     {
 
         /// <summary>
-        /// cblThuongHieu control.
+        /// lblDoanhThu control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.CheckBoxList cblThuongHieu;
+        protected global::System.Web.UI.WebControls.Label lblDoanhThu;
 
         /// <summary>
-        /// rblGia control.
+        /// lblDonMoi control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.RadioButtonList rblGia;
+        protected global::System.Web.UI.WebControls.Label lblDonMoi;
 
         /// <summary>
-        /// btnFilter control.
+        /// lblSanPham control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnFilter;
+        protected global::System.Web.UI.WebControls.Label lblSanPham;
 
         /// <summary>
-        /// lblKetQuaTimKiem control.
+        /// lblKhachHang control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblKetQuaTimKiem;
+        protected global::System.Web.UI.WebControls.Label lblKhachHang;
 
         /// <summary>
-        /// ddlSort control.
+        /// gvDonMoi control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlSort;
-
-        /// <summary>
-        /// lvSanPham control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.ListView lvSanPham;
+        protected global::System.Web.UI.WebControls.GridView gvDonMoi;
     }
 }

@@ -3,168 +3,210 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
+using System.Net;
 using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using WebDoChoi.Models;
 
 namespace WebDoChoi
 {
     public partial class ProductDetails : System.Web.UI.Page
     {
-        // Lấy chuỗi kết nối từ Web.config
         string strConn = ConfigurationManager.ConnectionStrings["DB_WEB_DO_CHOI_Conn"].ConnectionString;
+        int currentMaThuongHieu = 0;
+
         protected void Page_Load(object sender, EventArgs e)
         {
-            string id = Request.QueryString["id"];
-            if (!string.IsNullOrEmpty(id))
+            if (!IsPostBack)
             {
-                LoadChiTiet(id);
-                LoadAlbumAnh(id);
+                string id = Request.QueryString["id"];
+                if (string.IsNullOrEmpty(id) || !int.TryParse(id, out int maSP))
+                {
+                    Response.Redirect("Default.aspx");
+                    return;
+                }
+
+                LoadProductInfo(maSP);
+                LoadProductImages(maSP);
+
+                if (currentMaThuongHieu > 0)
+                {
+                    LoadRelatedProducts(maSP, currentMaThuongHieu);
+                }
             }
         }
 
-        private void LoadChiTiet(string id)
+        // 1. Load thông tin chi tiết sản phẩm
+        private void LoadProductInfo(int maSP)
         {
             using (SqlConnection conn = new SqlConnection(strConn))
             {
-            string sql = @"
-            SELECT s.*, th.TenThuongHieu, dt.KhoangDoTuoi, b.GiaBan, a.DuongDanAnh
-            FROM SanPham s
-            LEFT JOIN ThuongHieu th ON s.MaThuongHieu = th.MaThuongHieu
-            LEFT JOIN DoTuoi dt ON s.MaDoTuoi = dt.MaDoTuoi
-            OUTER APPLY (SELECT TOP 1 GiaBan FROM BienTheSanPham WHERE MaSanPham = s.MaSanPham) b
-            OUTER APPLY (SELECT TOP 1 DuongDanAnh FROM AnhSanPham WHERE MaSanPham = s.MaSanPham AND LaAnhChinh = 1) a
-            WHERE s.MaSanPham = @MaSP";
+                string sql = @"
+                    SELECT TOP 1 s.MaSanPham, s.TenSanPham, s.MaThuongHieu, s.MoTaChiTiet, 
+                           th.TenThuongHieu,
+                           ISNULL(b.GiaBan, 0) as GiaBan, 
+                           ISNULL(b.SoLuongTon, 0) as SoLuongTon,
+                           ISNULL(a.DuongDanAnh, '/Images/no-image.png') as AnhChinh
+                    FROM SanPham s
+                    LEFT JOIN ThuongHieu th ON s.MaThuongHieu = th.MaThuongHieu
+                    OUTER APPLY (SELECT TOP 1 * FROM BienTheSanPham WHERE MaSanPham = s.MaSanPham) b
+                    OUTER APPLY (SELECT TOP 1 DuongDanAnh FROM AnhSanPham WHERE MaSanPham = s.MaSanPham AND LaAnhChinh = 1) a
+                    WHERE s.MaSanPham = @ID";
 
                 SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@MaSP", id);
+                cmd.Parameters.AddWithValue("@ID", maSP);
                 conn.Open();
+
                 SqlDataReader dr = cmd.ExecuteReader();
                 if (dr.Read())
                 {
-                    lblTenSP.InnerText = dr["TenSanPham"].ToString();
-                    lblThuongHieu.InnerText = dr["TenThuongHieu"].ToString();
-                    lblDoTuoi.InnerText = dr["KhoangDoTuoi"].ToString();
-                    lblGia.InnerText = DinhDangTien(dr["GiaBan"]);
-                    divMoTa.InnerHtml = dr["MoTaChiTiet"].ToString();
+                    Page.Title = dr["TenSanPham"].ToString();
+                    lblTenSP.Text = dr["TenSanPham"].ToString();
+                    lblMaSP.Text = "#" + dr["MaSanPham"].ToString();
+                    lblThuongHieu.Text = dr["TenThuongHieu"].ToString();
 
-                    string tenAnh = dr["DuongDanAnh"].ToString();
-                    if (!string.IsNullOrEmpty(tenAnh))
+                    decimal gia = Convert.ToDecimal(dr["GiaBan"]);
+                    lblGia.Text = gia > 0 ? string.Format("{0:N0} đ", gia) : "Liên hệ";
+
+                    int tonKho = Convert.ToInt32(dr["SoLuongTon"]);
+                    if (tonKho > 0)
                     {
-                        imgMain.ImageUrl = "~/Images/Products/" + tenAnh;
+                        lblTinhTrang.Text = "CÒN HÀNG";
+                        lblTinhTrang.CssClass += " bg-success text-white";
+                        btnAddToCart.Enabled = true;
+                        txtSoLuong.Attributes["max"] = tonKho.ToString();
                     }
                     else
                     {
-                        imgMain.ImageUrl = "~/Images/logo.png";
+                        lblTinhTrang.Text = "HẾT HÀNG";
+                        lblTinhTrang.CssClass += " bg-secondary text-white";
+                        btnAddToCart.Enabled = false;
+                        btnAddToCart.Text = "TẠM HẾT HÀNG";
                     }
+
+                    // --- SỬA LỖI ẢNH LỚN TẠI ĐÂY ---
+                    string imgFile = dr["AnhChinh"].ToString();
+                    // Nếu tên file không bắt đầu bằng '/' (tức là chỉ có tên file như 'xe.jpg'), ta nối thêm đường dẫn vào
+                    if (!imgFile.StartsWith("/"))
+                    {
+                        imgMain.ImageUrl = "~/Images/Products/" + imgFile;
+                        imgThumbMain.ImageUrl = "~/Images/Products/" + imgFile;
+                    }
+                    else
+                    {
+                        // Nếu là '/Images/no-image.png' (mặc định từ SQL) thì giữ nguyên
+                        imgMain.ImageUrl = imgFile;
+                        imgThumbMain.ImageUrl = imgFile;
+                    }
+                    // -------------------------------
+
+                    divMoTaChiTiet.InnerHtml = dr["MoTaChiTiet"].ToString();
+                    string moTaFull = WebUtility.HtmlDecode(dr["MoTaChiTiet"].ToString());
+                    lblMoTaNgan.Text = moTaFull.Length > 200 ? moTaFull.Substring(0, 200) + "..." : moTaFull;
+
+                    currentMaThuongHieu = Convert.ToInt32(dr["MaThuongHieu"]);
+                }
+                else
+                {
+                    Response.Redirect("Default.aspx");
                 }
             }
         }
 
-        private void LoadAlbumAnh(string id)
+        // 2. Load Album ảnh phụ
+        private void LoadProductImages(int maSP)
         {
-            // Sử dụng lại biến strConn đã khai báo ở đầu class
             using (SqlConnection conn = new SqlConnection(strConn))
             {
-                // Câu lệnh SQL lấy tất cả ảnh của sản phẩm đó
-                string sql = "SELECT DuongDanAnh FROM AnhSanPham WHERE MaSanPham = @MaSP";
+                // THÊM: "AND LaAnhChinh = 0" để không lấy ảnh chính nữa
+                string sql = "SELECT DuongDanAnh FROM AnhSanPham WHERE MaSanPham = @ID AND LaAnhChinh = 0";
 
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
-                {
-                    cmd.Parameters.AddWithValue("@MaSP", id);
+                SqlDataAdapter da = new SqlDataAdapter(sql, conn);
+                da.SelectCommand.Parameters.AddWithValue("@ID", maSP);
 
-                    using (SqlDataAdapter da = new SqlDataAdapter(cmd))
-                    {
-                        DataTable dt = new DataTable();
-                        da.Fill(dt);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
 
-                        // Gán dữ liệu vào Repeater
-                        rptAlbum.DataSource = dt;
-                        rptAlbum.DataBind();
-                    }
-                }
+                rptAlbum.DataSource = dt;
+                rptAlbum.DataBind();
             }
         }
 
-        public static string DinhDangTien(object gia)
+        // 3. Load Sản phẩm liên quan
+        private void LoadRelatedProducts(int currentID, int brandID)
         {
-            if (gia == DBNull.Value || gia == null) return "Liên hệ";
+            using (SqlConnection conn = new SqlConnection(strConn))
+            {
+                string sql = @"
+                    SELECT TOP 4 s.MaSanPham, s.TenSanPham, 
+                           ISNULL(b.GiaBan, 0) as GiaBan,
+                           ISNULL(a.DuongDanAnh, 'no-image.png') as HinhAnh
+                    FROM SanPham s
+                    OUTER APPLY (SELECT TOP 1 GiaBan FROM BienTheSanPham WHERE MaSanPham = s.MaSanPham) b
+                    OUTER APPLY (SELECT TOP 1 DuongDanAnh FROM AnhSanPham WHERE MaSanPham = s.MaSanPham AND LaAnhChinh = 1) a
+                    WHERE s.MaThuongHieu = @BrandID AND s.MaSanPham != @CurrentID AND s.TrangThai = 1
+                    ORDER BY NEWID()";
 
-            decimal amount = Convert.ToDecimal(gia);
-            return string.Format(System.Globalization.CultureInfo.GetCultureInfo("vi-VN"), "{0:C0}", amount);
+                SqlCommand cmd = new SqlCommand(sql, conn);
+                cmd.Parameters.AddWithValue("@BrandID", brandID);
+                cmd.Parameters.AddWithValue("@CurrentID", currentID);
+
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                DataTable dt = new DataTable();
+                da.Fill(dt);
+
+                rptLienQuan.DataSource = dt;
+                rptLienQuan.DataBind();
+            }
         }
 
+        // 4. Xử lý Thêm vào giỏ hàng
         protected void btnAddToCart_Click(object sender, EventArgs e)
         {
             string id = Request.QueryString["id"];
             if (string.IsNullOrEmpty(id)) return;
-
             int maSP = int.Parse(id);
+            int soLuongMua = int.Parse(txtSoLuong.Text);
 
-            //Lấy thông tin sản phẩm từ Database
-            CartItem item = LayThongTinSanPham(maSP);
+            CartItem item = new CartItem();
+            item.MaSanPham = maSP;
+            item.SoLuong = soLuongMua;
 
-            if (item != null)
-            {
-                //Lấy giỏ hàng từ Session
-                List<CartItem> cart = Session["Cart"] as List<CartItem>;
-                if (cart == null)
-                {
-                    cart = new List<CartItem>();
-                }
-
-                //Kiểm tra sản phẩm đã có trong giỏ chưa
-                CartItem sanPhamDaCo = cart.Find(x => x.MaSanPham == maSP);
-                if (sanPhamDaCo != null)
-                {
-                    sanPhamDaCo.SoLuong++;
-                }
-                else
-                {
-                    cart.Add(item); // Chưa có thì thêm mới
-                }
-
-                //Cập nhật lại Session
-                Session["Cart"] = cart;
-
-                //Chuyển hướng sang trang Giỏ hàng
-                Response.Redirect("Cart.aspx");
-            }
-        }
-
-        // Hàm hỗ trợ lấy dữ liệu nhanh
-        private CartItem LayThongTinSanPham(int id)
-        {
             using (SqlConnection conn = new SqlConnection(strConn))
             {
-                // Lấy giá của biến thể rẻ nhất và ảnh chính
-                string sql = @"
-                    SELECT TOP 1 s.TenSanPham, ISNULL(b.GiaBan, 0) as GiaBan, a.DuongDanAnh
-                    FROM SanPham s
-                    OUTER APPLY (SELECT TOP 1 GiaBan FROM BienTheSanPham WHERE MaSanPham = s.MaSanPham ORDER BY GiaBan ASC) b
-                    OUTER APPLY (SELECT TOP 1 DuongDanAnh FROM AnhSanPham WHERE MaSanPham = s.MaSanPham AND LaAnhChinh = 1) a
-                    WHERE s.MaSanPham = @MaSP";
-                
+                string sql = @"SELECT TOP 1 s.TenSanPham, ISNULL(b.GiaBan, 0) as GiaBan, 
+                               ISNULL(a.DuongDanAnh, 'no-image.png') as HinhAnh
+                               FROM SanPham s
+                               OUTER APPLY (SELECT TOP 1 GiaBan FROM BienTheSanPham WHERE MaSanPham = s.MaSanPham) b
+                               OUTER APPLY (SELECT TOP 1 DuongDanAnh FROM AnhSanPham WHERE MaSanPham = s.MaSanPham AND LaAnhChinh = 1) a
+                               WHERE s.MaSanPham = @ID";
                 SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@MaSP", id);
+                cmd.Parameters.AddWithValue("@ID", maSP);
                 conn.Open();
                 SqlDataReader dr = cmd.ExecuteReader();
-
                 if (dr.Read())
                 {
-                    return new CartItem()
-                    {
-                        MaSanPham = id,
-                        TenSanPham = dr["TenSanPham"].ToString(),
-                        GiaBan = Convert.ToDecimal(dr["GiaBan"]),
-                        HinhAnh = dr["DuongDanAnh"] != DBNull.Value ? dr["DuongDanAnh"].ToString() : "/Images/no-image.png",
-                        SoLuong = 1
-                    };
+                    item.TenSanPham = dr["TenSanPham"].ToString();
+                    item.GiaBan = Convert.ToDecimal(dr["GiaBan"]);
+                    item.HinhAnh = dr["HinhAnh"].ToString();
                 }
             }
-            return null;
+
+            List<CartItem> cart = Session["Cart"] as List<CartItem>;
+            if (cart == null) cart = new List<CartItem>();
+
+            CartItem existingItem = cart.Find(x => x.MaSanPham == maSP);
+            if (existingItem != null)
+            {
+                existingItem.SoLuong += soLuongMua;
+            }
+            else
+            {
+                cart.Add(item);
+            }
+
+            Session["Cart"] = cart;
+            Response.Redirect("Cart.aspx");
         }
     }
 }
