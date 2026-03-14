@@ -1,0 +1,101 @@
+﻿.nav-link.active {
+    background: #ffc107;
+    color: #000 !important;
+}
+
+/* Khai báo biến toàn cục cho chiều rộng Sidebar */
+:root {
+    --sidebar-width: 250px;
+}
+
+/* 1. ĐỊNH DẠNG SIDEBAR (CỘT TRÁI) */
+.admin-sidebar {
+    position: fixed; /* Ghim cố định Sidebar vào màn hình */
+    top: 0;
+    left: 0;
+    height: 100vh; /* Chiều cao chiếm 100% màn hình */
+    width: var(--sidebar-width); /* Áp dụng chiều rộng từ biến */
+    background-color: #212529; /* Màu bg-dark của Bootstrap */
+    color: white;
+    z-index: 1040; /* Đảm bảo Sidebar luôn nằm trên các thành phần khác */
+    /* Xử lý cuộn độc lập */
+    overflow-y: auto; /* Tự động hiện thanh cuộn nếu menu quá dài */
+    overflow-x: hidden; /* Cấm cuộn ngang */
+}
+
+    /* Làm đẹp thanh cuộn cho Sidebar (Dành cho trình duyệt Webkit như Chrome/Edge) */
+    .admin-sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .admin-sidebar::-webkit-scrollbar-thumb {
+        background: #6c757d;
+        border-radius: 4px;
+    }
+
+/* 2. ĐỊNH DẠNG MAIN CONTENT (CỘT PHẢI) */
+.admin-main-content {
+    /* Đẩy toàn bộ nội dung sang phải một khoảng bằng đúng chiều rộng của Sidebar */
+    margin-left: var(--sidebar-width);
+    min-height: 100vh; /* Đảm bảo vùng này luôn cao ít nhất bằng màn hình */
+    background-color: #f8f9fa; /* Màu nền xám nhạt (bg-light) giúp làm nổi bật nội dung */
+    transition: margin-left 0.3s ease; /* Mượt mà nếu sau này bạn làm nút thu gọn Sidebar */
+}
+
+/* 3. RESPONSIVE CHO MOBILE (TÙY CHỌN THÊM) */
+/* Trên điện thoại, Sidebar sẽ đẩy lên trên và Main content chiếm 100% */
+@media (max-width: 768px) {
+    .admin-sidebar {
+        position: relative; /* Bỏ ghim cố định trên mobile */
+        height: auto;
+        width: 100%;
+        min-height: auto;
+    }
+
+    .admin-main-content {
+        margin-left: 0; /* Bỏ khoảng trống bên trái */
+    }
+}
+.admin-sidebar {
+    width: 250px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow-y: auto;
+    background-color: #212529; /* Màu dark của Bootstrap */
+    color: white;
+}
+
+.admin-main-content {
+    margin-left: 250px; /* Đẩy nội dung chính sang phải bằng đúng chiều rộng của sidebar */
+    min-height: 100vh;
+}
+
+.hover-bg:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+/* Tùy chỉnh nhỏ cho phân trang đẹp hơn */
+.pagination {
+    justify-content: center;
+    margin-bottom: 0;
+}
+
+    .pagination table td {
+        padding: 0 5px;
+    }
+
+    .pagination span {
+        padding: 5px 12px;
+        background: #0d6efd;
+        color: white;
+        border-radius: 4px;
+    }
+
+    .pagination a {
+        padding: 5px 12px;
+        text-decoration: none;
+        color: #0d6efd;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+    }

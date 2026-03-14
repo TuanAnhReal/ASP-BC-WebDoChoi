@@ -1,0 +1,116 @@
+﻿/* 1. KHỐI NỀN CỐ ĐỊNH (FIXED BACKGROUND) */
+.fixed-bg-wrapper {
+    background-image: url('../images/background/hinh-nen-tet-2025-cho-may-tinh-05.jpg');
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    min-height: 100vh;
+    display: flex;
+    align-items: center; /* Căn giữa theo chiều dọc */
+    justify-content: center; /* Căn giữa theo chiều ngang */
+}
+
+/* 2. KHUNG BỌC 80% (Đã bỏ viền mờ, bóng xám và padding) */
+.glass-frame {
+    width: 80%;
+    margin: 0 auto;
+}
+
+/* 3. FIX SIZE CAROUSEL VÀ ẢNH TRUYỆT ĐỐI */
+#mainCarousel {
+    width: 100%;
+}
+
+.carousel-inner {
+    width: 100%;
+    border-radius: 12px; /* Giữ lại bo góc cho đẹp, nếu không thích bạn có thể xóa dòng này */
+    overflow: hidden; /* Đảm bảo ảnh không bị tràn ra ngoài góc bo */
+}
+
+.carousel-item,
+.carousel-item a {
+    width: 100%;
+    height: 100%;
+    display: block; /* Ép thẻ <a> phủ kín khung */
+}
+
+    .carousel-item img {
+        width: 100% !important;
+        height: auto !important;
+    }
+
+/* Responsive cho điện thoại */
+@media (max-width: 768px) {
+    .glass-frame {
+        width: 95%;
+    }
+
+    .carousel-inner {
+        height: 300px;
+    }
+}
+
+.product-related-card {
+    transition: 0.3s;
+}
+
+.product-related-card:hover {
+     transform: translateY(-5px);
+     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Xóa bỏ border mặc định và định dạng hình tròn cơ bản */
+.pagination .page-link {
+    border-radius: 50% !important; /* Bo tròn */
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 5px; /* Khoảng cách giữa các nút */
+    border: none !important;
+    background-color: #f2f2f2 !important; /* Màu xám rất sáng, giống ảnh hơn */
+    color: #111111 !important; /* Màu đen đậm cho số */
+    font-weight: 700; /* In đậm số */
+    font-size: 16px;
+    box-shadow: none !important;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Định dạng cho trang đang được chọn (Active) */
+.pagination .page-item.active .page-link {
+    background-color: #c91432 !important; /* Màu đỏ tươi/đậm chuẩn xác hơn */
+    color: #ffffff !important;
+}
+
+/* Hiệu ứng hover cho các nút thường */
+.pagination .page-item:not(.active) .page-link:hover {
+    background-color: #e6e6e6 !important; /* Xám đậm hơn một chút khi di chuột qua */
+}
+
+/* Định dạng cho nút "Next" (Dựa vào class btn-next từ C#) */
+.pagination .page-item.btn-next .page-link {
+    background-color: transparent !important;
+    border: 2px solid #c91432 !important; /* Viền đỏ đồng bộ */
+    color: #c91432 !important; /* Mũi tên đỏ đồng bộ */
+    padding-left: 17px;
+}
+
+    .pagination .page-item.btn-next .page-link:hover {
+        background-color: #c91432 !important;
+        color: #ffffff !important;
+    }
+
+/* Định dạng cho nút "Prev" (nếu có) */
+.pagination .page-item.btn-prev .page-link {
+    background-color: transparent !important;
+    border: 2px solid #c91432 !important;
+    color: #c91432 !important;
+    padding-right: 17px;
+}
+
+.pagination .page-item.btn-prev .page-link:hover {
+    background-color: #c91432 !important;
+    color: #ffffff !important;
+}
